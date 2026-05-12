@@ -100,6 +100,43 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("User",userSchema);
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) {
+    return;
+  }
 
-export default User;    
+  this.password = await bcrypt.hash(this.password, 10);
+});
+
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+    },
+    env.JWT_ACCESS_SECRET,
+    {
+      expiresIn: "15m",
+    }
+  );
+};
+
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    env.JWT_REFRESH_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+};
+
+const User = mongoose.model("User", userSchema);
+
+export default User;

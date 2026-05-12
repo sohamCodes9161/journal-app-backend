@@ -4,10 +4,12 @@ import helmet from "helmet";
 import morgan from "morgan";
 import v1Routes from "./routes/v1/index.js";
 import  errorMiddleware  from "./middlewares/error.middleware.js";
+import cookieParser from "cookie-parser";
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 app.use("/api/v1", v1Routes);
 app.use(helmet());
 app.use(morgan("dev"));
