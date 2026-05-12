@@ -14,16 +14,6 @@ const registerUserService = async (userData) => {
         password,
     } = userData;
 
-    if (
-        !username ||
-        !email ||
-        !password
-    ) {
-        throw new ApiError(
-            400,
-            "All required fields must be provided"
-        );
-    }
 
     const existingEmail =
         await findUserByEmail(email);
