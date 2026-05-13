@@ -2,8 +2,7 @@ import ApiError from "../../utils/ApiError.js";
 
 import User from "../../models/User.js";
 
-const generateAccessAndRefreshTokens =
-  async (userId) => {
+const generateAccessAndRefreshTokens = async (userId) => {
 
     try {
 

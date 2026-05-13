@@ -1,10 +1,16 @@
 import ApiError from "../../utils/ApiError.js";
+import jwt from "jsonwebtoken";
+
+import User from "../../models/User.js";
+
+import { env } from "../../config/env.js";
 
 import {
     createUser,
     findUserByEmail,
     findUserByUsername,
 } from "./auth.repository.js";
+
 import { generateAccessAndRefreshTokens } from "./auth.utils.js";
 
 const registerUserService = async (userData) => {
@@ -102,8 +108,87 @@ const loginUserService = async (
 };
 
 
+const refreshAccessTokenService = async (incomingRefreshToken) => {
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(
+            401,
+            "Refresh token missing"
+        );
+    }
+
+    try {
+
+        const decodedToken =
+            jwt.verify(
+                incomingRefreshToken,
+                env.JWT_REFRESH_SECRET
+            );
+
+        const user =
+            await User.findById(
+                decodedToken?._id
+            );
+
+        if (!user) {
+            throw new ApiError(
+                401,
+                "Invalid refresh token"
+            );
+        }
+
+        if (
+            incomingRefreshToken !==
+            user.refreshToken
+        ) {
+            throw new ApiError(
+                401,
+                "Refresh token expired or reused"
+            );
+        }
+
+        const {
+            accessToken,
+            refreshToken,
+        } =
+            await generateAccessAndRefreshTokens(
+                user._id
+            );
+
+        return {
+            accessToken,
+            refreshToken,
+        };
+
+    } catch (error) {
+
+        throw new ApiError(
+            401,
+            error?.message ||
+            "Invalid refresh token"
+        );
+    }
+};
+
+const logoutUserService =
+    async (userId) => {
+
+        await User.findByIdAndUpdate(
+            userId,
+            {
+                $set: {
+                    refreshToken: "",
+                },
+            },
+            {
+                new: true,
+            }
+        );
+    };
 
 export {
     registerUserService,
     loginUserService,
+    refreshAccessTokenService,
+    logoutUserService
 };

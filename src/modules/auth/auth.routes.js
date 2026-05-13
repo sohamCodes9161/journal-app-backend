@@ -11,6 +11,8 @@ import {
   registerUser,
   loginUser,
   getCurrentUser,
+  refreshAccessToken,
+  logoutUser,
 } from "./auth.controller.js";
 
 const router = Router();
@@ -23,5 +25,8 @@ router.post(
 
 router.post("/login", validate(loginSchema), loginUser);
 router.get("/me", verifyJWT, getCurrentUser);
+router.post("/refresh-token", refreshAccessToken);
+router.post("/logout", verifyJWT, logoutUser);
+
 
 export default router;

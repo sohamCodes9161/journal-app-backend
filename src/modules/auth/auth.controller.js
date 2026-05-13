@@ -2,7 +2,9 @@ import asyncHandler from "../../utils/asyncHandler.js";
 
 import ApiResponse from "../../utils/ApiResponse.js";
 
-import { registerUserService, loginUserService } from "./auth.service.js";
+import ApiError from "../../utils/ApiError.js";
+
+import { registerUserService, loginUserService, logoutUserService, refreshAccessTokenService } from "./auth.service.js";
 
 const registerUser = asyncHandler(async (req, res) => {
 
@@ -56,6 +58,36 @@ const loginUser = asyncHandler(
     }
 );
 
+const logoutUser = asyncHandler(async (req, res) => {
+
+        await logoutUserService(
+            req.user._id
+        );
+
+        const options = {
+            httpOnly: true,
+            secure: false,
+        };
+
+        return res
+            .status(200)
+            .clearCookie(
+                "accessToken",
+                options
+            )
+            .clearCookie(
+                "refreshToken",
+                options
+            )
+            .json(
+                new ApiResponse(
+                    200,
+                    {},
+                    "User logged out successfully"
+                )
+            );
+    });
+
 const getCurrentUser = asyncHandler(
     async (req, res) => {
 
@@ -68,4 +100,50 @@ const getCurrentUser = asyncHandler(
         );
     }
 );
-export { registerUser, loginUser, getCurrentUser };
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+
+    const incomingRefreshToken =
+        req.cookies.refreshToken;
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(
+            400,
+            "Refresh token is required"
+        );
+    }
+    const result =
+        await refreshAccessTokenService(
+            incomingRefreshToken
+        );
+
+    const options = {
+        httpOnly: true,
+        secure: false,
+    };
+
+    return res
+        .status(200)
+        .cookie(
+            "accessToken",
+            result.accessToken,
+            options
+        )
+        .cookie(
+            "refreshToken",
+            result.refreshToken,
+            options
+        )
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    accessToken:
+                        result.accessToken,
+                },
+                "Access token refreshed successfully"
+            )
+        );
+});
+
+export { registerUser, loginUser, getCurrentUser, refreshAccessToken, logoutUser };
