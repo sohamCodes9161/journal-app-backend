@@ -1,7 +1,6 @@
 import ApiError from "../../utils/ApiError.js";
 import jwt from "jsonwebtoken";
 
-import User from "../../models/User.js";
 
 import { env } from "../../config/env.js";
 
@@ -9,6 +8,9 @@ import {
     createUser,
     findUserByEmail,
     findUserByUsername,
+    findUserById,
+    findUserByIdWithoutSensitiveFields,
+    updateUserRefreshToken, 
 } from "./auth.repository.js";
 
 import { generateAccessAndRefreshTokens } from "./auth.utils.js";
@@ -126,7 +128,7 @@ const refreshAccessTokenService = async (incomingRefreshToken) => {
             );
 
         const user =
-            await User.findById(
+            await findUserById(
                 decodedToken?._id
             );
 
@@ -170,21 +172,12 @@ const refreshAccessTokenService = async (incomingRefreshToken) => {
     }
 };
 
-const logoutUserService =
-    async (userId) => {
+const logoutUserService = async (userId) => {
 
-        await User.findByIdAndUpdate(
-            userId,
-            {
-                $set: {
-                    refreshToken: "",
-                },
-            },
-            {
-                new: true,
-            }
-        );
+        await updateUserRefreshToken(userId, "");
     };
+
+
 
 export {
     registerUserService,
