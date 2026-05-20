@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import validate from "../../middlewares/validate.middleware.js";
-import verifyJWT from "../../middlewares/auth.middleware.js";
+import validate from "../../middleware/validate.middleware.js";
+import verifyJWT from "../../middleware/auth.middleware.js";
 import {
   loginSchema,
   registerSchema,
@@ -17,16 +17,11 @@ import {
 
 const router = Router();
 
-router.post(
-  "/register",
-  validate(registerSchema),
-  registerUser
-);
+router.post("/register", validate(registerSchema), registerUser);
 
 router.post("/login", validate(loginSchema), loginUser);
 router.get("/me", verifyJWT, getCurrentUser);
 router.post("/refresh-token", refreshAccessToken);
 router.post("/logout", verifyJWT, logoutUser);
-
 
 export default router;
