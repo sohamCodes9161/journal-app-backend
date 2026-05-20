@@ -1,0 +1,74 @@
+import mongoose from "mongoose";
+
+const journalEntrySchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 150,
+    },
+
+    content: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true,
+    },
+
+    mood: {
+      type: String,
+      enum: ["happy", "sad", "neutral", "anxious", "excited", "angry"],
+      default: "neutral",
+    },
+
+    category: {
+      type: String,
+      default: "general",
+    },
+
+    tags: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+
+    attachments: [
+      {
+        type: String,
+      },
+    ],
+
+    isDraft: {
+      type: Boolean,
+      default: false,
+    },
+
+    wordCount: {
+      type: Number,
+      default: 0,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+journalEntrySchema.index({
+  userId: 1,
+  createdAt: -1,
+});
+
+journalEntrySchema.index({
+  tags: 1,
+});
+
+const JournalEntry = mongoose.model("JournalEntry", journalEntrySchema);
+
+export default JournalEntry;
