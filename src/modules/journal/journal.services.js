@@ -41,9 +41,12 @@ const updateJournalService = async (journalId, updateData, userId) => {
   const updatedFields = {
     ...updateData,
   };
-
   if (updateData.content) {
     updatedFields.wordCount = calculateWordCount(updateData.content);
+
+    const stringifiedContent = JSON.stringify(updateData.content);
+
+    updatedFields.content = encrypt(stringifiedContent);
   }
 
   const updatedJournal = await updateJournalById(journalId, updatedFields);
