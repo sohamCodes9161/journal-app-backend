@@ -8,18 +8,20 @@ import {
 } from "./journal.repository.js";
 import ApiError from "../../utils/ApiError.js";
 import { calculateWordCount } from "./journal.utils.js";
+import { encrypt, decrypt } from "../../utils/encryption.js";
 
 import { getOwnedJournalOrThrow } from "./journal.authorization.js";
 
 const createJournalService = async (journalData, userId) => {
   const { title, content, mood, category, tags, isDraft } = journalData;
-
+  const stringifiedContent = JSON.stringify(content);
+  const encryptedContent = encrypt(stringifiedContent);
   const wordCount = calculateWordCount(content);
 
   const journal = await createJournal({
     userId,
     title,
-    content,
+    content: encryptedContent,
     mood,
     category,
     tags,

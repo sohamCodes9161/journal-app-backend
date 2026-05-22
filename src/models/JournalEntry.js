@@ -17,8 +17,15 @@ const journalEntrySchema = new mongoose.Schema(
     },
 
     content: {
-      type: mongoose.Schema.Types.Mixed,
-      required: true,
+      iv: {
+        type: String,
+        required: true,
+      },
+
+      encryptedData: {
+        type: String,
+        required: true,
+      },
     },
 
     mood: {

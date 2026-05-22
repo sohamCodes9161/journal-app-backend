@@ -1,11 +1,12 @@
+import { decrypt } from "../../utils/encryption.js";
+
 const serializeJournal = (journal) => {
   return {
     id: journal._id,
 
     title: journal.title,
 
-    content: journal.content,
-
+    content: JSON.parse(decrypt(journal.content)),
     mood: journal.mood,
 
     category: journal.category,
