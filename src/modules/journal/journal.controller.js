@@ -9,12 +9,20 @@ import asyncHandler from "../../utils/asyncHandler.js";
 import ApiResponse from "../../utils/ApiResponse.js";
 import { get } from "mongoose";
 
+import { serializeJournal, serializeJournals } from "./journal.serializer.js";
+
 const createJournalController = asyncHandler(async (req, res) => {
   const journal = await createJournalService(req.validatedData, req.user._id);
 
   return res
     .status(201)
-    .json(new ApiResponse(201, journal, "Journal created successfully"));
+    .json(
+      new ApiResponse(
+        201,
+        serializeJournal(journal),
+        "Journal created successfully"
+      )
+    );
 });
 
 const getSingleJournalController = asyncHandler(async (req, res) => {
@@ -25,7 +33,13 @@ const getSingleJournalController = asyncHandler(async (req, res) => {
   );
   return res
     .status(200)
-    .json(new ApiResponse(200, journal, "Journal retrieved successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        serializeJournal(journal),
+        "Journal retrieved successfully"
+      )
+    );
 });
 
 const updateJournalController = asyncHandler(async (req, res) => {
@@ -37,7 +51,13 @@ const updateJournalController = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, updatedJournal, "Journal updated successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        serializeJournal(updatedJournal),
+        "Journal updated successfully"
+      )
+    );
 });
 
 const deleteJournalController = asyncHandler(async (req, res) => {
