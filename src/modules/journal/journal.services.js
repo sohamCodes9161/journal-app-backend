@@ -1,4 +1,8 @@
-import { createJournal, findJournalById } from "./journal.repository.js";
+import {
+  createJournal,
+  findJournalById,
+  updateJournalById,
+} from "./journal.repository.js";
 import ApiError from "../../utils/ApiError.js";
 import { calculateWordCount } from "./journal.utils.js";
 
@@ -36,4 +40,27 @@ const getSingleJournalService = async (journalId, userId) => {
   return journal;
 };
 
-export { createJournalService, getSingleJournalService };
+const updateJournalService = async (journalId, updateData, userId) => {
+  const existingJournal = await findJournalById(journalId);
+
+  if (!existingJournal) {
+    throw new ApiError(404, "Journal not found");
+  }
+
+  if (existingJournal.userId.toString() !== userId.toString()) {
+    throw new ApiError(403, "Unauthorized access to journal");
+  }
+
+  const updatedFields = {
+    ...updateData,
+  };
+
+  if (updateData.content) {
+    updatedFields.wordCount = calculateWordCount(updateData.content);
+  }
+
+  const updatedJournal = await updateJournalById(journalId, updatedFields);
+
+  return updatedJournal;
+};
+export { createJournalService, getSingleJournalService, updateJournalService };

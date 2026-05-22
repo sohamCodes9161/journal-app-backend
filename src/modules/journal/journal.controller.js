@@ -1,6 +1,7 @@
 import {
   createJournalService,
   getSingleJournalService,
+  updateJournalService,
 } from "./journal.services.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 
@@ -26,4 +27,20 @@ const getSingleJournalController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, journal, "Journal retrieved successfully"));
 });
 
-export { createJournalController, getSingleJournalController };
+const updateJournalController = asyncHandler(async (req, res) => {
+  const updatedJournal = await updateJournalService(
+    req.params.journalId,
+    req.validatedData,
+    req.user._id
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedJournal, "Journal updated successfully"));
+});
+
+export {
+  createJournalController,
+  getSingleJournalController,
+  updateJournalController,
+};

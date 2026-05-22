@@ -8,4 +8,10 @@ const findJournalById = async (journalId) => {
   return await JournalEntry.findById(journalId);
 };
 
-export { createJournal, findJournalById };
+const updateJournalById = async (journalId, updatedData) => {
+  return await JournalEntry.findByIdAndUpdate(journalId, updatedData, {
+    new: true,
+  });
+};
+
+export { createJournal, findJournalById, updateJournalById };
