@@ -2,6 +2,7 @@ import {
   createJournal,
   findJournalById,
   updateJournalById,
+  deleteJournalById,
 } from "./journal.repository.js";
 import ApiError from "../../utils/ApiError.js";
 import { calculateWordCount } from "./journal.utils.js";
@@ -63,4 +64,22 @@ const updateJournalService = async (journalId, updateData, userId) => {
 
   return updatedJournal;
 };
-export { createJournalService, getSingleJournalService, updateJournalService };
+
+const deleteJournalService = async (journalId, userId) => {
+  const journal = await findJournalById(journalId);
+
+  if (!journal) {
+    throw new ApiError(404, "Journal not found");
+  }
+  if (journal.userId.toString() !== userId.toString()) {
+    throw new ApiError(403, "Unauthorized access to journal");
+  }
+  await deleteJournalById(journalId);
+};
+
+export {
+  createJournalService,
+  getSingleJournalService,
+  updateJournalService,
+  deleteJournalService,
+};

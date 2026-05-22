@@ -14,4 +14,8 @@ const updateJournalById = async (journalId, updatedData) => {
   });
 };
 
-export { createJournal, findJournalById, updateJournalById };
+const deleteJournalById = async (journalId) => {
+  return await JournalEntry.findByIdAndDelete(journalId);
+};
+
+export { createJournal, findJournalById, updateJournalById, deleteJournalById };

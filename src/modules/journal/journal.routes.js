@@ -13,6 +13,7 @@ import {
   createJournalController,
   getSingleJournalController,
   updateJournalController,
+  deleteJournalController,
 } from "./journal.controller.js";
 
 const router = Router();
@@ -31,4 +32,5 @@ router.patch(
   validate(updateJournalSchema),
   updateJournalController
 );
+router.delete("/:journalId", verifyJWT, deleteJournalController);
 export default router;

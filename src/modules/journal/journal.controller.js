@@ -2,6 +2,7 @@ import {
   createJournalService,
   getSingleJournalService,
   updateJournalService,
+  deleteJournalService,
 } from "./journal.services.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 
@@ -39,8 +40,17 @@ const updateJournalController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedJournal, "Journal updated successfully"));
 });
 
+const deleteJournalController = asyncHandler(async (req, res) => {
+  await deleteJournalService(req.params.journalId, req.user._id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Journal deleted successfully"));
+});
+
 export {
   createJournalController,
   getSingleJournalController,
   updateJournalController,
+  deleteJournalController,
 };
