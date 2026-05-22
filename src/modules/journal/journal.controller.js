@@ -3,6 +3,7 @@ import {
   getSingleJournalService,
   updateJournalService,
   deleteJournalService,
+  getJournalsService,
 } from "./journal.services.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 
@@ -68,9 +69,27 @@ const deleteJournalController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Journal deleted successfully"));
 });
 
+const getJournalsController = asyncHandler(async (req, res) => {
+  const result = await getJournalsService(req.query, req.user._id);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        journals: serializeJournals(result.journals),
+
+        pagination: result.pagination,
+      },
+
+      "Journals fetched successfully"
+    )
+  );
+});
+
 export {
   createJournalController,
   getSingleJournalController,
   updateJournalController,
   deleteJournalController,
+  getJournalsController,
 };

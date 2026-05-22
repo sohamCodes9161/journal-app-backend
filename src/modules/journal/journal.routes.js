@@ -14,6 +14,7 @@ import {
   getSingleJournalController,
   updateJournalController,
   deleteJournalController,
+  getJournalsController,
 } from "./journal.controller.js";
 
 const router = Router();
@@ -25,6 +26,7 @@ router.post(
   createJournalController
 );
 
+router.get("/", verifyJWT, getJournalsController);
 router.get("/:journalId", verifyJWT, getSingleJournalController);
 router.patch(
   "/:journalId",

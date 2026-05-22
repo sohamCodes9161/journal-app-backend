@@ -3,6 +3,8 @@ import {
   findJournalById,
   updateJournalById,
   deleteJournalById,
+  getUserJournals,
+  countUserJournals,
 } from "./journal.repository.js";
 import ApiError from "../../utils/ApiError.js";
 import { calculateWordCount } from "./journal.utils.js";
@@ -29,19 +31,8 @@ const createJournalService = async (journalData, userId) => {
 };
 
 const getSingleJournalService = async (journalId, userId) => {
-  const journal = await getOwnedJournalOrThrow(journalId, userId);
-  if (!journal) {
-    throw new ApiError(404, "Journal entry not found");
-  }
-  if (journal.userId.toString() !== userId.toString()) {
-    throw new ApiError(
-      403,
-      "You do not have permission to access this journal entry"
-    );
-  }
-  return journal;
+  return await getOwnedJournalOrThrow(journalId, userId);
 };
-
 const updateJournalService = async (journalId, updateData, userId) => {
   const journal = await getOwnedJournalOrThrow(journalId, userId);
 
@@ -63,9 +54,68 @@ const deleteJournalService = async (journalId, userId) => {
   await deleteJournalById(journalId);
 };
 
+const getJournalsService = async (query, userId) => {
+  const page = parseInt(query.page) || 1;
+
+  const limit = parseInt(query.limit) || 10;
+
+  const skip = (page - 1) * limit;
+
+  const filters = {};
+
+  if (query.mood) {
+    filters.mood = query.mood;
+  }
+
+  if (query.category) {
+    filters.category = query.category;
+  }
+
+  if (query.search) {
+    filters.title = {
+      $regex: query.search,
+      $options: "i",
+    };
+  }
+
+  const sortBy = query.sortBy || "createdAt";
+
+  const sortType = query.sortType === "asc" ? 1 : -1;
+
+  const sortOptions = {
+    [sortBy]: sortType,
+  };
+
+  const journals = await getUserJournals({
+    userId,
+    filters,
+    sortOptions,
+    skip,
+    limit,
+  });
+
+  const totalJournals = await countUserJournals({
+    userId,
+    filters,
+  });
+
+  return {
+    journals,
+
+    pagination: {
+      total: totalJournals,
+      page,
+      limit,
+
+      totalPages: Math.ceil(totalJournals / limit),
+    },
+  };
+};
+
 export {
   createJournalService,
   getSingleJournalService,
   updateJournalService,
   deleteJournalService,
+  getJournalsService,
 };
