@@ -6,7 +6,10 @@ import validate from "../../middleware/validate.middleware.js";
 
 import { createJournalSchema } from "./journal.validation.js";
 
-import { createJournalController } from "./journal.controller.js";
+import {
+  createJournalController,
+  getSingleJournalController,
+} from "./journal.controller.js";
 
 const router = Router();
 
@@ -16,5 +19,7 @@ router.post(
   validate(createJournalSchema),
   createJournalController
 );
+
+router.get("/:journalId", verifyJWT, getSingleJournalController);
 
 export default router;

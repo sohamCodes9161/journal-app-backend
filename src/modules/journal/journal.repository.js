@@ -4,4 +4,8 @@ const createJournal = async (journalData) => {
   return await JournalEntry.create(journalData);
 };
 
-export { createJournal };
+const findJournalById = async (journalId) => {
+  return await JournalEntry.findById(journalId);
+};
+
+export { createJournal, findJournalById };
