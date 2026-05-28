@@ -5,6 +5,7 @@ import morgan from "morgan";
 import v1Routes from "./routes/v1/index.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 import cookieParser from "cookie-parser";
+import uploadRoutes from "./modules/upload/upload.routes.js";
 const app = express();
 
 app.use(express.json());
@@ -16,6 +17,7 @@ app.use(
 );
 app.use(cookieParser());
 app.use("/api/v1", v1Routes);
+app.use("/api/v1/uploads", uploadRoutes);
 app.use(helmet());
 app.use(morgan("dev"));
 
