@@ -60,22 +60,23 @@ const deleteJournalService = async (journalId, userId) => {
 };
 
 const getJournalsService = async (query, userId) => {
-  const page = parseInt(query.page) || 1;
-
-  const limit = parseInt(query.limit) || 10;
-
+  const page = Math.max(parseInt(query.page, 10) || 1, 1);
+  const limit = Math.max(parseInt(query.limit, 10) || 10, 1);
   const skip = (page - 1) * limit;
 
   const filters = {};
 
+  // Mood filter
   if (query.mood) {
     filters.mood = query.mood;
   }
 
+  // Category filter
   if (query.category) {
     filters.category = query.category;
   }
 
+  // Title search
   if (query.search) {
     filters.title = {
       $regex: query.search,
@@ -83,35 +84,53 @@ const getJournalsService = async (query, userId) => {
     };
   }
 
-  const sortBy = query.sortBy || "createdAt";
+  // ✅ Date range filter (THIS WAS MISSING)
+  if (query.startDate || query.endDate) {
+    filters.createdAt = {};
 
+    if (query.startDate) {
+      const start = new Date(query.startDate);
+      if (!isNaN(start)) {
+        filters.createdAt.$gte = start;
+      }
+    }
+
+    if (query.endDate) {
+      const end = new Date(query.endDate);
+      if (!isNaN(end)) {
+        filters.createdAt.$lte = end;
+      }
+    }
+  }
+
+  const sortBy = query.sortBy || "createdAt";
   const sortType = query.sortType === "asc" ? 1 : -1;
 
   const sortOptions = {
     [sortBy]: sortType,
   };
 
-  const journals = await getUserJournals({
-    userId,
-    filters,
-    sortOptions,
-    skip,
-    limit,
-  });
+  const [journals, totalJournals] = await Promise.all([
+    getUserJournals({
+      userId,
+      filters,
+      sortOptions,
+      skip,
+      limit,
+    }),
 
-  const totalJournals = await countUserJournals({
-    userId,
-    filters,
-  });
+    countUserJournals({
+      userId,
+      filters,
+    }),
+  ]);
 
   return {
     journals,
-
     pagination: {
       total: totalJournals,
       page,
       limit,
-
       totalPages: Math.ceil(totalJournals / limit),
     },
   };
