@@ -11,13 +11,16 @@ import { calculateWordCount } from "./journal.utils.js";
 import { encrypt, decrypt } from "../../utils/encryption.js";
 
 import { getOwnedJournalOrThrow } from "./journal.authorization.js";
+import { extractMediaIds } from "./journal.utils.js";
+import Media from "../media/media.model.js";
+import cloudinary from "../../config/cloudinary.js";
 
 const createJournalService = async (journalData, userId) => {
   const { title, content, mood, category, tags, isDraft } = journalData;
   const stringifiedContent = JSON.stringify(content);
   const encryptedContent = encrypt(stringifiedContent);
   const wordCount = calculateWordCount(content);
-
+  const mediaIds = extractMediaIds(content); // Extract media IDs from content
   const journal = await createJournal({
     userId,
     title,
@@ -27,6 +30,7 @@ const createJournalService = async (journalData, userId) => {
     tags,
     isDraft,
     wordCount,
+    attachments: mediaIds, // Save media IDs in the journal document
   });
 
   return journal;
@@ -35,6 +39,7 @@ const createJournalService = async (journalData, userId) => {
 const getSingleJournalService = async (journalId, userId) => {
   return await getOwnedJournalOrThrow(journalId, userId);
 };
+
 const updateJournalService = async (journalId, updateData, userId) => {
   const journal = await getOwnedJournalOrThrow(journalId, userId);
 
@@ -43,6 +48,7 @@ const updateJournalService = async (journalId, updateData, userId) => {
   };
   if (updateData.content) {
     updatedFields.wordCount = calculateWordCount(updateData.content);
+    updatedFields.attachments = extractMediaIds(updateData.content); // Update media IDs if content is updated
 
     const stringifiedContent = JSON.stringify(updateData.content);
 
@@ -56,6 +62,16 @@ const updateJournalService = async (journalId, updateData, userId) => {
 
 const deleteJournalService = async (journalId, userId) => {
   const journal = await getOwnedJournalOrThrow(journalId, userId);
+
+  // find media linked to journal
+  const mediaList = await Media.find({ journalId });
+
+  // delete from cloudinary
+  for (const media of mediaList) {
+    await cloudinary.uploader.destroy(media.publicId);
+    await Media.findByIdAndDelete(media._id);
+  }
+
   await deleteJournalById(journalId);
 };
 

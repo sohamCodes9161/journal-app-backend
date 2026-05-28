@@ -2,7 +2,7 @@ import asyncHandler from "../../utils/asyncHandler.js";
 
 import ApiResponse from "../../utils/ApiResponse.js";
 
-import { uploadImageService } from "./upload.service.js";
+import { uploadImageService, deleteImageService } from "./upload.service.js";
 
 const uploadImageController = asyncHandler(async (req, res) => {
   if (!req.file) {
@@ -11,21 +11,25 @@ const uploadImageController = asyncHandler(async (req, res) => {
       .json(new ApiResponse(400, null, "Image file is required"));
   }
 
-  const result = await uploadImageService(req.file.buffer);
+  const result = await uploadImageService(req.file.buffer, req.user._id);
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-
-      {
-        imageUrl: result.secure_url,
-
-        publicId: result.public_id,
-      },
-
-      "Image uploaded successfully"
-    )
-  );
+  return res.status(200).json({
+    success: true,
+    message: "Image uploaded successfully",
+    data: {
+      mediaId: result.mediaId,
+      url: result.url,
+      publicId: result.publicId,
+    },
+  });
 });
 
-export { uploadImageController };
+const deleteImageController = asyncHandler(async (req, res) => {
+  const { mediaId } = req.params;
+  await deleteImageService(mediaId, req.user._id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Image deleted successfully"));
+});
+export { uploadImageController, deleteImageController };
