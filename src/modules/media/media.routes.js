@@ -5,28 +5,20 @@ import verifyJWT from "../../middleware/auth.middleware.js";
 import upload from "../../middleware/multer.middleware.js";
 
 import {
-  uploadImageController,
-  deleteImageController,
-} from "./upload.controller.js";
+  uploadMediaController,
+  deleteMediaController,
+} from "./media.controller.js";
 
 const router = Router();
 
-router.post(
-  "/image",
-
-  verifyJWT,
-
-  upload.single("image"),
-
-  uploadImageController
-);
+router.post("/upload", verifyJWT, upload.single("file"), uploadMediaController);
 
 router.delete(
   "/:mediaId",
 
   verifyJWT,
 
-  deleteImageController
+  deleteMediaController
 );
 
-export default router;
+export const mediaRoutes = router;

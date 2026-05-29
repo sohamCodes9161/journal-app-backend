@@ -19,26 +19,25 @@ const calculateWordCount = (editorJSON) => {
 
   return extractedText.trim().split(/\s+/).filter(Boolean).length;
 };
+export const extractMediaIds = (content) => {
+  const ids = [];
 
-const extractMediaIds = (content) => {
-  const mediaIds = [];
-
-  const traverse = (node) => {
+  function walk(node) {
     if (!node) return;
 
-    if (node.type === "image" && node.attrs?.mediaId) {
-      mediaIds.push(node.attrs.mediaId);
+    if (node.type === "image") {
+      if (node.attrs?.mediaId) {
+        ids.push(node.attrs.mediaId);
+      }
     }
 
-    if (node.content && Array.isArray(node.content)) {
-      node.content.forEach(traverse);
+    if (node.content) {
+      node.content.forEach(walk);
     }
-  };
+  }
 
-  traverse(content);
-
-  return mediaIds;
+  walk(content);
+  return ids;
 };
 
-export { extractMediaIds };
 export { calculateWordCount };

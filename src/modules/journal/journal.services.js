@@ -17,10 +17,14 @@ import cloudinary from "../../config/cloudinary.js";
 
 const createJournalService = async (journalData, userId) => {
   const { title, content, mood, category, tags, isDraft } = journalData;
+
   const stringifiedContent = JSON.stringify(content);
   const encryptedContent = encrypt(stringifiedContent);
+
   const wordCount = calculateWordCount(content);
-  const mediaIds = extractMediaIds(content); // Extract media IDs from content
+
+  const mediaIds = extractMediaIds(content);
+
   const journal = await createJournal({
     userId,
     title,
@@ -30,34 +34,50 @@ const createJournalService = async (journalData, userId) => {
     tags,
     isDraft,
     wordCount,
-    attachments: mediaIds, // Save media IDs in the journal document
+    attachments: mediaIds,
   });
+
+  // 🔥 IMPORTANT: link media → journal AFTER creation
+  if (updateData.content) {
+    // ... your existing extraction logic ...
+    updatedFields.attachments = mediaIds;
+
+    // 1. Link current media
+    await Media.updateMany({ _id: { $in: mediaIds } }, { journalId });
+
+    // 2. Unlink (or delete) media that belongs to this journal but is no longer in the mediaIds array
+    await Media.updateMany(
+      { journalId: journalId, _id: { $nin: mediaIds } },
+      { $set: { journalId: null } }
+    );
+
+    // (Optional: You could also write logic here to trigger Cloudinary deletion for unlinked media)
+  }
 
   return journal;
 };
-
 const getSingleJournalService = async (journalId, userId) => {
   return await getOwnedJournalOrThrow(journalId, userId);
 };
-
 const updateJournalService = async (journalId, updateData, userId) => {
   const journal = await getOwnedJournalOrThrow(journalId, userId);
 
-  const updatedFields = {
-    ...updateData,
-  };
+  const updatedFields = { ...updateData };
+
   if (updateData.content) {
     updatedFields.wordCount = calculateWordCount(updateData.content);
-    updatedFields.attachments = extractMediaIds(updateData.content); // Update media IDs if content is updated
+
+    const mediaIds = extractMediaIds(updateData.content);
+    updatedFields.attachments = mediaIds;
 
     const stringifiedContent = JSON.stringify(updateData.content);
-
     updatedFields.content = encrypt(stringifiedContent);
+
+    // 🔥 sync media again
+    await Media.updateMany({ _id: { $in: mediaIds } }, { journalId });
   }
 
-  const updatedJournal = await updateJournalById(journalId, updatedFields);
-
-  return updatedJournal;
+  return await updateJournalById(journalId, updatedFields);
 };
 
 const deleteJournalService = async (journalId, userId) => {
