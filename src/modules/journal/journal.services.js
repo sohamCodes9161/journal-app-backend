@@ -22,7 +22,6 @@ const createJournalService = async (journalData, userId) => {
   const encryptedContent = encrypt(stringifiedContent);
 
   const wordCount = calculateWordCount(content);
-
   const mediaIds = extractMediaIds(content);
 
   const journal = await createJournal({
@@ -37,28 +36,21 @@ const createJournalService = async (journalData, userId) => {
     attachments: mediaIds,
   });
 
-  // 🔥 IMPORTANT: link media → journal AFTER creation
-  if (updateData.content) {
-    // ... your existing extraction logic ...
-    updatedFields.attachments = mediaIds;
-
-    // 1. Link current media
-    await Media.updateMany({ _id: { $in: mediaIds } }, { journalId });
-
-    // 2. Unlink (or delete) media that belongs to this journal but is no longer in the mediaIds array
+  // 🔥 FIXED: Link media → journal using the newly created journal._id
+  if (mediaIds && mediaIds.length > 0) {
     await Media.updateMany(
-      { journalId: journalId, _id: { $nin: mediaIds } },
-      { $set: { journalId: null } }
+      { _id: { $in: mediaIds } },
+      { journalId: journal._id }
     );
-
-    // (Optional: You could also write logic here to trigger Cloudinary deletion for unlinked media)
   }
 
   return journal;
 };
+
 const getSingleJournalService = async (journalId, userId) => {
   return await getOwnedJournalOrThrow(journalId, userId);
 };
+
 const updateJournalService = async (journalId, updateData, userId) => {
   const journal = await getOwnedJournalOrThrow(journalId, userId);
 
@@ -73,8 +65,15 @@ const updateJournalService = async (journalId, updateData, userId) => {
     const stringifiedContent = JSON.stringify(updateData.content);
     updatedFields.content = encrypt(stringifiedContent);
 
-    // 🔥 sync media again
+    // 🔥 FIXED: Sync media safely during updates
+    // 1. Link new media items to this journal
     await Media.updateMany({ _id: { $in: mediaIds } }, { journalId });
+
+    // 2. Unlink old media items that were deleted from the editor text
+    await Media.updateMany(
+      { journalId: journalId, _id: { $nin: mediaIds } },
+      { $set: { journalId: null } }
+    );
   }
 
   return await updateJournalById(journalId, updatedFields);
@@ -120,7 +119,7 @@ const getJournalsService = async (query, userId) => {
     };
   }
 
-  // ✅ Date range filter (THIS WAS MISSING)
+  // Date range filter
   if (query.startDate || query.endDate) {
     filters.createdAt = {};
 
