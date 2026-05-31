@@ -30,7 +30,17 @@ const journalEntrySchema = new mongoose.Schema(
 
     mood: {
       type: String,
-      enum: ["happy", "sad", "neutral", "anxious", "excited", "angry"],
+      enum: [
+        "happy",
+        "sad",
+        "neutral",
+        "anxious",
+        "excited",
+        "angry",
+        "grateful",
+        "tired",
+        "reflective",
+      ],
       default: "neutral",
     },
 
