@@ -17,25 +17,34 @@ const findUserById = async (userId) => {
 };
 
 const findUserByIdWithoutSensitiveFields = async (userId) => {
-    return await User.findById(userId)
-      .select("-password -refreshToken -__v");
-  };
+  return await User.findById(userId).select("-password -refreshToken -__v");
+};
 
 const updateUserRefreshToken = async (userId, refreshToken) => {
-
-    return await User.findByIdAndUpdate(
-      userId,
-      {
-        $set: {
-          refreshToken,
-        },
+  return await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        refreshToken,
       },
-      {
-        new: true,
-      }
-    );
-  };
+    },
+    {
+      new: true,
+    }
+  );
+};
 
+const findUserByIdAndUpdate = async (userId, updateData) => {
+  return await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: updateData,
+    },
+    {
+      new: true,
+    }
+  );
+};
 
 export {
   findUserByEmail,
@@ -44,4 +53,5 @@ export {
   findUserById,
   findUserByIdWithoutSensitiveFields,
   updateUserRefreshToken,
+  findUserByIdAndUpdate,
 };
