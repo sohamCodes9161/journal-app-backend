@@ -3,12 +3,13 @@ import asyncHandler from "../../utils/asyncHandler.js";
 import ApiResponse from "../../utils/ApiResponse.js";
 
 import ApiError from "../../utils/ApiError.js";
-
+import { uploadMediaService } from "../media/media.service.js";
 import {
   registerUserService,
   loginUserService,
   logoutUserService,
   refreshAccessTokenService,
+  updateUserSettingsService,
 } from "./auth.service.js";
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -96,10 +97,30 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     );
 });
 
+const updateUserSetting = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const updateData = { ...req.body };
+
+  // 1. If the user sent an actual file upload, process it through your Cloudinary engine
+  if (req.file) {
+    const uploadResult = await uploadMediaService(req.file.buffer, userId);
+    // Overwrite profilePicture string field with the newly generated secure URL
+    updateData.profilePicture = uploadResult.url;
+  }
+  const updatedUser = await updateUserSettingsService(userId, updateData);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedUser, "User profile updated successfully")
+    );
+});
+
 export {
   registerUser,
   loginUser,
   getCurrentUser,
   refreshAccessToken,
   logoutUser,
+  updateUserSetting,
 };
