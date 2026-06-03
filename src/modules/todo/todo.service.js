@@ -43,9 +43,46 @@ const deleteTodoService = async (todoId, userId) => {
   await deleteTodoById(todoId);
 };
 
+const getAllTodosService = async (query, userId) => {
+  const page = Number(query.page) || 1;
+
+  const limit = Number(query.limit) || 10;
+
+  const sortBy = query.sortBy || "createdAt";
+
+  const sortType = query.sortType === "asc" ? 1 : -1;
+
+  const filters = buildTodoQuery(query);
+
+  filters.userId = userId;
+
+  const result = await getTodos(filters, {
+    page,
+    limit,
+    sort: {
+      [sortBy]: sortType,
+    },
+  });
+
+  return {
+    todos: result.todos,
+
+    pagination: {
+      total: result.total,
+
+      page,
+
+      limit,
+
+      totalPages: Math.ceil(result.total / limit),
+    },
+  };
+};
+
 export {
   createTodoService,
   getSingleTodoService,
   updateTodoService,
   deleteTodoService,
+  getAllTodosService,
 };
