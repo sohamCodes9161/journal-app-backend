@@ -6,7 +6,7 @@ import {
 } from "./todo.repository.js";
 
 import { getOwnedTodoOrThrow } from "./todo.authorization.js";
-
+import { buildTodoQuery } from "./todo.query.js";
 const createTodoService = async (todoData, userId) => {
   const todo = await createTodo({
     ...todoData,
