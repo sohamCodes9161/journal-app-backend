@@ -7,6 +7,7 @@ import {
   getSingleTodoController,
   updateTodoController,
   deleteTodoController,
+  getAllTodosController,
 } from "./todo.controller.js";
 
 const router = Router();
@@ -14,6 +15,8 @@ const router = Router();
 router.use(verifyJWT);
 
 router.post("/", createTodoController);
+
+router.get("/", getAllTodosController);
 
 router.get("/:todoId", getSingleTodoController);
 
