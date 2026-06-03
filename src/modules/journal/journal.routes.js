@@ -6,7 +6,7 @@ import validate from "../../middleware/validate.middleware.js";
 
 import {
   createJournalSchema,
-  updateJournalSchema,
+  updateJournalValidatorSchema,
 } from "./journal.validation.js";
 
 import {
@@ -31,7 +31,7 @@ router.get("/:journalId", verifyJWT, getSingleJournalController);
 router.patch(
   "/:journalId",
   verifyJWT,
-  validate(updateJournalSchema),
+  validate(updateJournalValidatorSchema),
   updateJournalController
 );
 router.delete("/:journalId", verifyJWT, deleteJournalController);
