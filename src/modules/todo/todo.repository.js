@@ -18,4 +18,21 @@ const deleteTodoById = async (todoId) => {
   return await Todo.findByIdAndDelete(todoId);
 };
 
-export { createTodo, findTodoById, updateTodoById, deleteTodoById };
+const getTodos = async (filters, options) => {
+  const { page, limit, sort } = options;
+
+  const skip = (page - 1) * limit;
+
+  const [todos, total] = await Promise.all([
+    Todo.find(filters).sort(sort).skip(skip).limit(limit),
+
+    Todo.countDocuments(filters),
+  ]);
+
+  return {
+    todos,
+    total,
+  };
+};
+
+export { createTodo, findTodoById, updateTodoById, deleteTodoById, getTodos };
