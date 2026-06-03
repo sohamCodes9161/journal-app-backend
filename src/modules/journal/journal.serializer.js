@@ -22,6 +22,11 @@ const serializeJournal = (journal) => {
     createdAt: journal.createdAt,
 
     updatedAt: journal.updatedAt,
+    // ⬇️ ADD THIS EXPLICIT MAPPER
+    styleSettings: {
+      themePreset: journal.styleSettings?.themePreset || "cosmic-dark",
+      layoutWidth: journal.styleSettings?.layoutWidth || "max-w-5xl",
+    },
   };
 };
 
