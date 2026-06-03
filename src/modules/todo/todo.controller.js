@@ -7,6 +7,7 @@ import {
   getSingleTodoService,
   updateTodoService,
   deleteTodoService,
+  getAllTodosService,
 } from "./todo.service.js";
 
 const createTodoController = asyncHandler(async (req, res) => {
@@ -45,9 +46,18 @@ const deleteTodoController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Todo deleted successfully"));
 });
 
+const getAllTodosController = asyncHandler(async (req, res) => {
+  const data = await getAllTodosService(req.query, req.user._id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, "Todos fetched successfully"));
+});
+
 export {
   createTodoController,
   getSingleTodoController,
   updateTodoController,
   deleteTodoController,
+  getAllTodosController,
 };
