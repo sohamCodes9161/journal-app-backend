@@ -56,6 +56,14 @@ const updateJournalService = async (journalId, updateData, userId) => {
 
   const updatedFields = { ...updateData };
 
+  // Explicitly ensure styleSettings are preserved correctly in the payload mapping
+  if (updateData.styleSettings) {
+    updatedFields.styleSettings = {
+      themePreset: updateData.styleSettings.themePreset || "cosmic-dark",
+      layoutWidth: updateData.styleSettings.layoutWidth || "max-w-5xl",
+    };
+  }
+
   if (updateData.content) {
     updatedFields.wordCount = calculateWordCount(updateData.content);
 
@@ -65,11 +73,10 @@ const updateJournalService = async (journalId, updateData, userId) => {
     const stringifiedContent = JSON.stringify(updateData.content);
     updatedFields.content = encrypt(stringifiedContent);
 
-    // 🔥 FIXED: Sync media safely during updates
-    // 1. Link new media items to this journal
+    // Link new media items to this journal
     await Media.updateMany({ _id: { $in: mediaIds } }, { journalId });
 
-    // 2. Unlink old media items that were deleted from the editor text
+    // Unlink old media items that were deleted from the editor text
     await Media.updateMany(
       { journalId: journalId, _id: { $nin: mediaIds } },
       { $set: { journalId: null } }
