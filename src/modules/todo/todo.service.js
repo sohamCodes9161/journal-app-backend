@@ -2,6 +2,7 @@ import {
   createTodo,
   updateTodoById,
   deleteTodoById,
+  getTodos,
 } from "./todo.repository.js";
 
 import { getOwnedTodoOrThrow } from "./todo.authorization.js";
