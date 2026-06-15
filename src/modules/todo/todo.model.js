@@ -6,78 +6,25 @@ const todoSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
-
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 200,
-    },
-
-    description: {
-      type: String,
-      default: "",
-      maxlength: 2000,
-    },
-
-    priority: {
-      type: String,
-      enum: ["low", "medium", "high"],
-      default: "medium",
-    },
-
-    category: {
-      type: String,
-      default: "general",
-    },
-
-    horizonType: {
-      type: String,
-      enum: ["today", "week", "long-term"],
-      default: "today",
-    },
-
-    progressPercentage: {
-      type: Number,
-      min: 0,
-      max: 100,
-      default: 0,
-    },
-
+    title: { type: String, required: true, trim: true, maxlength: 255 },
     status: {
       type: String,
-      enum: ["pending", "in-progress", "completed"],
+      enum: ["pending", "completed"],
       default: "pending",
-      index: true,
     },
-
-    dueDate: {
-      type: Date,
-      default: null,
+    horizonType: {
+      type: String,
+      enum: ["today", "week", "later"],
+      default: "today",
     },
-
-    completedAt: {
-      type: Date,
-      default: null,
-    },
+    completedAt: { type: Date, default: null },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-todoSchema.index({
-  userId: 1,
-  createdAt: -1,
-});
+// CRITICAL CLEANUP: Indexing for high-speed lookups
+todoSchema.index({ userId: 1, horizonType: 1 });
+todoSchema.index({ userId: 1, status: 1 });
 
-todoSchema.index({
-  userId: 1,
-  status: 1,
-});
-
-const Todo = mongoose.model("Todo", todoSchema);
-
-export default Todo;
+export default mongoose.model("Todo", todoSchema);

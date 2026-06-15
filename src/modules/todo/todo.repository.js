@@ -1,38 +1,29 @@
 import Todo from "./todo.model.js";
 
-const createTodo = async (todoData) => {
-  return await Todo.create(todoData);
+export const createTodoRepo = async (data) => {
+  return await Todo.create(data);
 };
 
-const findTodoById = async (todoId) => {
-  return await Todo.findById(todoId);
-};
-
-const updateTodoById = async (todoId, updateData) => {
-  return await Todo.findByIdAndUpdate(todoId, updateData, {
-    new: true,
+export const findTodosByUserIdRepo = async (userId) => {
+  return await Todo.find({ userId }).sort({
+    horizonType: 1,
+    position: 1,
+    createdAt: -1,
   });
 };
 
-const deleteTodoById = async (todoId) => {
-  return await Todo.findByIdAndDelete(todoId);
+export const findTodoByIdRepo = async (todoId, userId) => {
+  return await Todo.findOne({ _id: todoId, userId });
 };
 
-const getTodos = async (filters, options) => {
-  const { page, limit, sort } = options;
-
-  const skip = (page - 1) * limit;
-
-  const [todos, total] = await Promise.all([
-    Todo.find(filters).sort(sort).skip(skip).limit(limit),
-
-    Todo.countDocuments(filters),
-  ]);
-
-  return {
-    todos,
-    total,
-  };
+export const updateTodoRepo = async (todoId, userId, updateData) => {
+  return await Todo.findOneAndUpdate(
+    { _id: todoId, userId },
+    { $set: updateData },
+    { new: true }
+  );
 };
 
-export { createTodo, findTodoById, updateTodoById, deleteTodoById, getTodos };
+export const deleteTodoRepo = async (todoId, userId) => {
+  return await Todo.findOneAndDelete({ _id: todoId, userId });
+};

@@ -1,5 +1,4 @@
 import asyncHandler from "../../utils/asyncHandler.js";
-
 import ApiResponse from "../../utils/ApiResponse.js";
 
 import {
@@ -8,14 +7,15 @@ import {
   updateTodoService,
   deleteTodoService,
   getAllTodosService,
-} from "./todo.service.js";
+  clearCompletedTodosService,
+} from "./todo.service.js"; // Adjust path as necessary
 
 const createTodoController = asyncHandler(async (req, res) => {
   const todo = await createTodoService(req.body, req.user._id);
 
   return res
     .status(201)
-    .json(new ApiResponse(201, todo, "Todo created successfully"));
+    .json(new ApiResponse(201, todo, "Intention created successfully"));
 });
 
 const getSingleTodoController = asyncHandler(async (req, res) => {
@@ -23,7 +23,7 @@ const getSingleTodoController = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, todo, "Todo fetched successfully"));
+    .json(new ApiResponse(200, todo, "Intention fetched successfully"));
 });
 
 const updateTodoController = asyncHandler(async (req, res) => {
@@ -35,7 +35,7 @@ const updateTodoController = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, todo, "Todo updated successfully"));
+    .json(new ApiResponse(200, todo, "Intention updated successfully"));
 });
 
 const deleteTodoController = asyncHandler(async (req, res) => {
@@ -43,21 +43,35 @@ const deleteTodoController = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, "Todo deleted successfully"));
+    .json(new ApiResponse(200, {}, "Intention deleted successfully"));
 });
 
 const getAllTodosController = asyncHandler(async (req, res) => {
-  const data = await getAllTodosService(req.query, req.user._id);
+  // Passing req.user._id to fetch all intentions for the logged-in user
+  const data = await getAllTodosService(req.user._id);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, data, "Todos fetched successfully"));
+    .json(new ApiResponse(200, data, "Intentions fetched successfully"));
 });
 
+const clearCompletedTodosController = asyncHandler(async (req, res) => {
+  const report = await clearCompletedTodosService(req.user._id);
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        report,
+        `${report.deletedCount} fulfilled intentions swept clean ✨`
+      )
+    );
+});
 export {
   createTodoController,
   getSingleTodoController,
   updateTodoController,
   deleteTodoController,
   getAllTodosController,
+  clearCompletedTodosController,
 };

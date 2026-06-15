@@ -1,9 +1,9 @@
 import ApiError from "../../utils/ApiError.js";
 
-import { findTodoById } from "./todo.repository.js";
+import { findTodosByUserIdRepo } from "./todo.repository.js";
 
 const getOwnedTodoOrThrow = async (todoId, userId) => {
-  const todo = await findTodoById(todoId);
+  const todo = await findTodosByUserIdRepo(userId);
 
   if (!todo) {
     throw new ApiError(404, "Todo not found");

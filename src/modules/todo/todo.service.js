@@ -1,89 +1,71 @@
+import Todo from "./todo.model.js"; // Fallback direct call for bulk operations
+import ApiError from "../../utils/ApiError.js";
 import {
-  createTodo,
-  updateTodoById,
-  deleteTodoById,
-  getTodos,
+  createTodoRepo,
+  findTodosByUserIdRepo,
+  updateTodoRepo,
+  deleteTodoRepo,
+  findTodoByIdRepo,
 } from "./todo.repository.js";
 
-import { getOwnedTodoOrThrow } from "./todo.authorization.js";
-import { buildTodoQuery } from "./todo.query.js";
-const createTodoService = async (todoData, userId) => {
-  const todo = await createTodo({
+export const createTodoService = async (todoData, userId) => {
+  if (!todoData.title || todoData.title.trim() === "") {
+    throw new ApiError(400, "Intention title cannot be empty");
+  }
+
+  const newTodo = {
     ...todoData,
     userId,
-  });
+    status: "pending",
+    completedAt: null,
+  };
 
+  return await createTodoRepo(newTodo);
+};
+
+export const getAllTodosService = async (userId) => {
+  // We don't need req.query right now because our minimal app fetches all
+  // active tasks for the user and the frontend groups them by horizonType.
+  return await findTodosByUserIdRepo(userId);
+};
+
+export const getSingleTodoService = async (todoId, userId) => {
+  const todo = await findTodoByIdRepo(todoId, userId);
+  if (!todo) {
+    throw new ApiError(404, "Intention not found");
+  }
   return todo;
 };
 
-const getSingleTodoService = async (todoId, userId) => {
-  return await getOwnedTodoOrThrow(todoId, userId);
-};
-
-const updateTodoService = async (todoId, updateData, userId) => {
-  await getOwnedTodoOrThrow(todoId, userId);
-
-  const updatedFields = {
-    ...updateData,
-  };
-
+export const updateTodoService = async (todoId, updateData, userId) => {
+  // Auto-manage the completedAt timestamp
   if (updateData.status === "completed") {
-    updatedFields.completedAt = new Date();
-
-    updatedFields.progressPercentage = 100;
+    updateData.completedAt = new Date();
+  } else if (updateData.status === "pending") {
+    updateData.completedAt = null;
   }
 
-  const updatedTodo = await updateTodoById(todoId, updatedFields);
+  const updatedTodo = await updateTodoRepo(todoId, userId, updateData);
+
+  if (!updatedTodo) {
+    throw new ApiError(404, "Intention not found or unauthorized");
+  }
 
   return updatedTodo;
 };
 
-const deleteTodoService = async (todoId, userId) => {
-  await getOwnedTodoOrThrow(todoId, userId);
+export const deleteTodoService = async (todoId, userId) => {
+  const deletedTodo = await deleteTodoRepo(todoId, userId);
 
-  await deleteTodoById(todoId);
+  if (!deletedTodo) {
+    throw new ApiError(404, "Intention not found or unauthorized");
+  }
+
+  return deletedTodo;
 };
 
-const getAllTodosService = async (query, userId) => {
-  const page = Number(query.page) || 1;
-
-  const limit = Number(query.limit) || 10;
-
-  const sortBy = query.sortBy || "createdAt";
-
-  const sortType = query.sortType === "asc" ? 1 : -1;
-
-  const filters = buildTodoQuery(query);
-
-  filters.userId = userId;
-
-  const result = await getTodos(filters, {
-    page,
-    limit,
-    sort: {
-      [sortBy]: sortType,
-    },
-  });
-
-  return {
-    todos: result.todos,
-
-    pagination: {
-      total: result.total,
-
-      page,
-
-      limit,
-
-      totalPages: Math.ceil(result.total / limit),
-    },
-  };
-};
-
-export {
-  createTodoService,
-  getSingleTodoService,
-  updateTodoService,
-  deleteTodoService,
-  getAllTodosService,
+// Append this function to your existing service file
+export const clearCompletedTodosService = async (userId) => {
+  const result = await Todo.deleteMany({ userId, status: "completed" });
+  return { deletedCount: result.deletedCount };
 };
