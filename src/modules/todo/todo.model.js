@@ -18,6 +18,7 @@ const todoSchema = new mongoose.Schema(
       enum: ["today", "week", "later"],
       default: "today",
     },
+    isPinned: { type: Boolean, default: false },
     completedAt: { type: Date, default: null },
   },
   { timestamps: true }
