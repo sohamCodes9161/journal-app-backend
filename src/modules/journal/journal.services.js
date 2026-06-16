@@ -101,7 +101,24 @@ const deleteJournalService = async (journalId, userId) => {
   await deleteJournalById(journalId);
 };
 
-const getJournalsService = async (query, userId) => {
+const getJournalsService = async (rawQuery, userId) => {
+  // 1. Sanitize incoming query data
+  // Strips out empty strings (""), "null", and "undefined" so they don't corrupt MongoDB filters
+  const query = {};
+  Object.keys(rawQuery).forEach((key) => {
+    const val = rawQuery[key];
+    if (
+      val !== undefined &&
+      val !== null &&
+      val !== "" &&
+      val !== "null" &&
+      val !== "undefined"
+    ) {
+      query[key] = val;
+    }
+  });
+
+  // 2. Pagination setups
   const page = Math.max(parseInt(query.page, 10) || 1, 1);
   const limit = Math.max(parseInt(query.limit, 10) || 10, 1);
   const skip = (page - 1) * limit;
@@ -126,25 +143,47 @@ const getJournalsService = async (query, userId) => {
     };
   }
 
-  // Date range filter
-  if (query.startDate || query.endDate) {
-    filters.createdAt = {};
+  // 3. Date selection mechanics
+  if (query.date) {
+    // Target exact date routing (e.g., redirect from Analytics timeline grid click)
+    const targetDate = new Date(query.date);
+    if (!isNaN(targetDate)) {
+      const startOfDay = new Date(targetDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(targetDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      filters.createdAt = {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      };
+    }
+  } else if (query.startDate || query.endDate) {
+    // Custom date range fallback selection logic
+    const dateRangeFilter = {};
 
     if (query.startDate) {
       const start = new Date(query.startDate);
       if (!isNaN(start)) {
-        filters.createdAt.$gte = start;
+        dateRangeFilter.$gte = start;
       }
     }
 
     if (query.endDate) {
       const end = new Date(query.endDate);
       if (!isNaN(end)) {
-        filters.createdAt.$lte = end;
+        dateRangeFilter.$lte = end;
       }
+    }
+
+    // Only map to main filter tree if valid parameters were compiled
+    if (Object.keys(dateRangeFilter).length > 0) {
+      filters.createdAt = dateRangeFilter;
     }
   }
 
+  // 4. Sorting rules execution
   const sortBy = query.sortBy || "createdAt";
   const sortType = query.sortType === "asc" ? 1 : -1;
 
@@ -152,6 +191,7 @@ const getJournalsService = async (query, userId) => {
     [sortBy]: sortType,
   };
 
+  // 5. Database aggregation execution
   const [journals, totalJournals] = await Promise.all([
     getUserJournals({
       userId,
