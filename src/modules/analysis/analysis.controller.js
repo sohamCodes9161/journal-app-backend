@@ -1,5 +1,5 @@
 import { computeWorkspaceAnalytics } from "./analysis.service.js";
-import APIResponse from "../../utils/apiResponse.js";
+import ApiResponse from "../../utils/apiResponse.js";
 export const getWorkspaceAnalytics = async (req, res) => {
   try {
     // Assuming your auth gateway pins user info to req.user
