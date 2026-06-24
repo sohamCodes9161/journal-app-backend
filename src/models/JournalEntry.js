@@ -77,38 +77,23 @@ const journalEntrySchema = new mongoose.Schema(
       themePreset: {
         type: String,
         enum: [
-          // --- Core Themes ---
-          "cosmic-dark",
-          "warm-parchment",
-          "vibrant-release",
-          "minimal-matte",
-
-          // --- Dark & Atmospheric Escapes ---
-          "midnight-neon", // High contrast dark cyber vibes
-          "obsidian-vault", // Deep monochromatic matte blacks
-          "nebula-mist", // Cosmic purples and deep space blues
-          "stardust-dream", // Soft twinkling dark slate
-
-          // --- Florals, Botanicals & Earth Textures ---
-          "floral-sanctuary", // Deep vintage roses and dark florals
-          "botanic-shadows", // Dark forest greens and ivy overlays
-          "wilted-orchid", // Moody, deep plum botanical textures
-          "enchanted-woods", // Mossy bark and warm autumn tones
-          "sakura-dusk", // Twilight cherry blossoms on deep slate
-
-          // --- Warm, Nostalgic & Cozy Textures ---
-          "vintage-library", // Smoked cedar and aged book spines
-          "desert-sandstone", // Warm clay, terracotta, and soft stone
-          "cozy-hearth", // Deep amber glows and charcoal smoke
-          "amber-apothecary", // Warm tint glass and herbal accents
-
-          // --- Soft Pastel & High-Vibrancy Releases ---
-          "lavender-haze", // Dreamy pastel violet and misty mornings
-          "ocean-serenity", // Calm coastal tiffany blues and seafoam
-          "solar-flare", // High-energy energetic sunset gradients
-          "aurora-borealis", // Shifting northern lights neon glows
+          "azure_mist",
+          "parchment",
+          "almond_cream",
+          "almond_silk",
+          "camel",
+          "celadon",
+          "beige_custom",
+          "soft_apricot",
+          "cotton_candy",
+          "taupe_grey",
+          "pearl_beige",
+          "ash_grey",
+          "pacific_blue",
+          "vintage_lavender",
+          "midnight_violet",
         ],
-        default: "cosmic-dark",
+        default: "parchment", // A nice soft default
       },
       layoutWidth: {
         type: String,
