@@ -11,12 +11,10 @@ import { env } from "./config/env.js";
 const app = express();
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: ["http://localhost:5173", env.FRONTEND_URL],
-    credentials: true,
-  })
-);
+cors({
+  origin: ["http://localhost:5173", "https://your-vercel-app.vercel.app"],
+  credentials: true,
+});
 app.use(cookieParser());
 app.use("/api/v1", v1Routes);
 app.use("/api/v1/media", mediaRoutes);
