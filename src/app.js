@@ -11,15 +11,13 @@ import { env } from "./config/env.js";
 const app = express();
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://journal-app-backend-69ps.onrender.com",
-    ],
-    credentials: true,
-  })
-);
+cors({
+  origin: [
+    "http://localhost:5173",
+    "https://journal-app-frontend-olive.vercel.app",
+  ],
+  credentials: true,
+});
 app.use(cookieParser());
 app.use("/api/v1", v1Routes);
 app.use("/api/v1/media", mediaRoutes);
