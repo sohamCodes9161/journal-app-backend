@@ -7,6 +7,31 @@ import analyticsRoutes from "../../modules/analysis/analysis.routes.js";
 
 const router = Router();
 
+router.get("/", (req, res) => {
+  res.json(
+    new ApiResponse({
+      message: "Welcome to the Journal App API",
+      data: {
+        version: "1.0.0",
+        routes: [
+          {
+            path: "/auth",
+            description: "Authentication routes",
+          },
+          {
+            path: "/journals",
+            description: "Journal routes",
+          },
+          {
+            path: "/analytics",
+            description: "Analytics routes",
+          },
+        ],
+      },
+    })
+  );
+});
+
 router.use("/auth", authRoutes);
 router.use("/journals", journalRoutes);
 

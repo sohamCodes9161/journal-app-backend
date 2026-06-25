@@ -7,15 +7,13 @@ import errorMiddleware from "./middleware/error.middleware.js";
 import cookieParser from "cookie-parser";
 import { mediaRoutes } from "./modules/media/media.routes.js";
 import todoRoutes from "./modules/todo/todo.routes.js";
+import { env } from "./config/env.js";
 const app = express();
 
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://journal-app-frontend-dusky.vercel.app/",
-    ],
+    origin: ["http://localhost:5173", env.FRONTEND_URL],
     credentials: true,
   })
 );
