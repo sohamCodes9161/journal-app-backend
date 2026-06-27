@@ -1,37 +1,20 @@
 import { z } from "zod";
 
-// The unified strict list of allowed themes across your entire app
 const allowedThemes = [
-  "cosmic-dark",
   "warm-parchment",
-  "vibrant-release",
-  "minimal-matte",
-  "midnight-neon",
-  "obsidian-vault",
-  "nebula-mist",
-  "stardust-dream",
-  "floral-sanctuary",
-  "botanic-shadows",
-  "wilted-orchid",
-  "enchanted-woods",
   "sakura-dusk",
-  "vintage-library",
-  "desert-sandstone",
-  "cozy-hearth",
-  "amber-apothecary",
-  "lavender-haze",
-  "ocean-serenity",
-  "solar-flare",
-  "aurora-borealis",
-
-  // 💡 FIXED: Added your custom frontend atmospheres here so the backend accepts them!
   "sky-breeze",
-  "mint-sage",
-  "mist-gray",
+  "mint_sage",
+  "desert-sandstone",
+  "lavender_haze",
+  "ocean-serenity",
+  "mist_gray",
+  "midnight",
 ];
 
 const styleSettingsSchema = z.object({
-  themePreset: z.enum(allowedThemes).optional(),
+  themePreset: z.enum(allowedThemes).default("warm-parchment"),
+
   layoutWidth: z
     .enum([
       "max-w-3xl",
@@ -41,7 +24,7 @@ const styleSettingsSchema = z.object({
       "max-w-7xl",
       "max-w-full",
     ])
-    .optional(),
+    .default("max-w-5xl"),
 });
 
 const createJournalSchema = z.object({
@@ -63,7 +46,7 @@ const createJournalSchema = z.object({
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
   isDraft: z.boolean().optional(),
-  styleSettings: styleSettingsSchema.optional(), // 💡 FIXED: Allows themes on initial creation
+  styleSettings: styleSettingsSchema.optional(),
 });
 
 const updateJournalValidatorSchema = z.object({
@@ -84,7 +67,7 @@ const updateJournalValidatorSchema = z.object({
     .optional(),
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  styleSettings: styleSettingsSchema.optional(), // 💡 FIXED: Uses the updated theme array
+  styleSettings: styleSettingsSchema.optional(),
 });
 
 export { createJournalSchema, updateJournalValidatorSchema };

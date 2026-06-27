@@ -71,30 +71,24 @@ const journalEntrySchema = new mongoose.Schema(
       default: 0,
     },
 
-    /* 🎨 NEW FEATURE: Emotional Customization Settings */
-    /* 🎨 CUSTOMIZATION ENGINE: Expanded Creative & Emotional Aesthetics */
+    // 🎨 Journal Appearance Settings
     styleSettings: {
       themePreset: {
         type: String,
         enum: [
-          "azure_mist",
-          "parchment",
-          "almond_cream",
-          "almond_silk",
-          "camel",
-          "celadon",
-          "beige_custom",
-          "soft_apricot",
-          "cotton_candy",
-          "taupe_grey",
-          "pearl_beige",
-          "ash_grey",
-          "pacific_blue",
-          "vintage_lavender",
-          "midnight_violet",
+          "warm-parchment",
+          "sakura-dusk",
+          "sky-breeze",
+          "mint_sage",
+          "desert-sandstone",
+          "lavender_haze",
+          "ocean-serenity",
+          "mist_gray",
+          "midnight",
         ],
-        default: "parchment", // A nice soft default
+        default: "warm-parchment",
       },
+
       layoutWidth: {
         type: String,
         enum: [
@@ -114,7 +108,7 @@ const journalEntrySchema = new mongoose.Schema(
   }
 );
 
-// Compounded Performance Indexes
+// Performance Indexes
 journalEntrySchema.index({
   userId: 1,
   createdAt: -1,
