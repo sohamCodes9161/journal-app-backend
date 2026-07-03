@@ -16,7 +16,9 @@ import Media from "../media/media.model.js";
 import cloudinary from "../../config/cloudinary.js";
 
 const createJournalService = async (journalData, userId) => {
-  const { title, content, mood, category, tags, isDraft } = journalData;
+  // FIXED: Destructure styleSettings from the incoming request payload
+  const { title, content, mood, category, tags, isDraft, styleSettings } =
+    journalData;
 
   const stringifiedContent = JSON.stringify(content);
   const encryptedContent = encrypt(stringifiedContent);
@@ -24,6 +26,7 @@ const createJournalService = async (journalData, userId) => {
   const wordCount = calculateWordCount(content);
   const mediaIds = extractMediaIds(content);
 
+  // FIXED: Forward styleSettings into the database creation layer
   const journal = await createJournal({
     userId,
     title,
@@ -34,9 +37,13 @@ const createJournalService = async (journalData, userId) => {
     isDraft,
     wordCount,
     attachments: mediaIds,
+    styleSettings: {
+      themePreset: styleSettings?.themePreset || "warm-parchment",
+      layoutWidth: styleSettings?.layoutWidth || "max-w-5xl",
+    },
   });
 
-  // 🔥 FIXED: Link media → journal using the newly created journal._id
+  // Link media → journal using the newly created journal._id
   if (mediaIds && mediaIds.length > 0) {
     await Media.updateMany(
       { _id: { $in: mediaIds } },
@@ -73,14 +80,33 @@ const updateJournalService = async (journalId, updateData, userId) => {
     const stringifiedContent = JSON.stringify(updateData.content);
     updatedFields.content = encrypt(stringifiedContent);
 
-    // Link new media items to this journal
+    // Link new media items to this journal entry
     await Media.updateMany({ _id: { $in: mediaIds } }, { journalId });
 
-    // Unlink old media items that were deleted from the editor text
-    await Media.updateMany(
-      { journalId: journalId, _id: { $nin: mediaIds } },
-      { $set: { journalId: null } }
-    );
+    /* 
+      FIXED: Find all media assets that used to belong to this journal,
+      but were deleted by the user inside the editor during this edit session.
+    */
+    const orphanedMediaList = await Media.find({
+      journalId: journalId,
+      _id: { $nin: mediaIds },
+    });
+
+    // Loop through the removed assets and wipe them from Cloudinary and MongoDB
+    for (const media of orphanedMediaList) {
+      if (media.publicId) {
+        try {
+          await cloudinary.uploader.destroy(media.publicId);
+        } catch (cloudinaryError) {
+          console.error(
+            `Failed to destroy publicId ${media.publicId} from Cloudinary:`,
+            cloudinaryError
+          );
+          // Keep looping to ensure MongoDB gets cleaned up even if a cloud call slips
+        }
+      }
+      await Media.findByIdAndDelete(media._id);
+    }
   }
 
   return await updateJournalById(journalId, updatedFields);
@@ -89,12 +115,21 @@ const updateJournalService = async (journalId, updateData, userId) => {
 const deleteJournalService = async (journalId, userId) => {
   const journal = await getOwnedJournalOrThrow(journalId, userId);
 
-  // find media linked to journal
+  // Find all media items explicitly linked to this journal
   const mediaList = await Media.find({ journalId });
 
-  // delete from cloudinary
+  // Delete all assets from Cloudinary storage and clear database rows
   for (const media of mediaList) {
-    await cloudinary.uploader.destroy(media.publicId);
+    if (media.publicId) {
+      try {
+        await cloudinary.uploader.destroy(media.publicId);
+      } catch (cloudinaryError) {
+        console.error(
+          `Failed to destroy publicId ${media.publicId} on journal delete:`,
+          cloudinaryError
+        );
+      }
+    }
     await Media.findByIdAndDelete(media._id);
   }
 
