@@ -27,7 +27,6 @@ const createJournalController = asyncHandler(async (req, res) => {
 });
 
 const getSingleJournalController = asyncHandler(async (req, res) => {
-  // console.log(req.params.journalId, req.user._id);
   const journal = await getSingleJournalService(
     req.params.journalId,
     req.user._id
