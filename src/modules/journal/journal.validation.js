@@ -4,16 +4,16 @@ const allowedThemes = [
   "warm-parchment",
   "sakura-dusk",
   "sky-breeze",
-  "mint_sage",
+  "mint-sage",
   "desert-sandstone",
-  "lavender_haze",
+  "lavender-haze",
   "ocean-serenity",
-  "mist_gray",
-  "midnight",
+  "mist-gray",
+  "midnight-ink",
 ];
 
 const styleSettingsSchema = z.object({
-  themePreset: z.enum(allowedThemes).default("warm-parchment"),
+  themePreset: z.enum(allowedThemes).default("midnight-ink"),
 
   layoutWidth: z
     .enum([
