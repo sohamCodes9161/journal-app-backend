@@ -39,13 +39,11 @@ const userSchema = new mongoose.Schema(
       default: "",
       maxlength: 300,
     },
-
     themePreference: {
       type: String,
-      enum: ["light", "dark"],
-      default: "dark",
+      enum: ["midnight-ink", "sage-garden", "sky-breeze", "sakura-mist"],
+      default: "sky-breeze",
     },
-
     timezone: {
       type: String,
       default: "UTC",
