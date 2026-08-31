@@ -16,6 +16,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://journal-app-frontend-olive.vercel.app",
+      "https://journal-app-frontend-two.vercel.app"
     ],
     credentials: true,
   })
